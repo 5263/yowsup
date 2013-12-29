@@ -34,15 +34,11 @@ class MediaUploader(WARequest):
 		#import logging
 		#Logger.debug(*args)
 
+	def uploadstream(self, stream, uploadUrl,filename,filetype):
 		_host = uploadUrl.replace("https://","")
-
 		self.url = _host[:_host.index('/')]
-
+		filesize=len(stream)
 		try:
-			filename = os.path.basename(sourcePath)
-			filetype = mimetypes.guess_type(filename)[0]
-			filesize = os.path.getsize(sourcePath)
-
 			self.sock.connect((self.url, self.port));
 			ssl_sock = ssl.wrap_socket(self.sock)
 
@@ -82,15 +78,10 @@ class MediaUploader(WARequest):
 			self._d(hBAOS)
 			ssl_sock.write(bytearray(POST.encode()))
 			ssl_sock.write(bytearray(hBAOS.encode()))
-
 			totalsent = 0
 			buf = 1024
-			f = open(sourcePath, 'rb')
-			stream = f.read()
-			f.close()
 			status = 0
 			lastEmit = 0
-
 			while totalsent < int(filesize):
 				ssl_sock.write(stream[:buf])
 				status = totalsent * 100 / filesize
@@ -144,3 +135,21 @@ class MediaUploader(WARequest):
 			print("Error occured at transfer %s"%sys.exc_info()[1])
 			if self.errorCallback:
 				self.errorCallback();
+			raise
+	def uploadfile(self, sourcePath, uploadUrl):
+		try:
+			filename = os.path.basename(sourcePath)
+			filetype = mimetypes.guess_type(filename)[0]
+			filesize = os.path.getsize(sourcePath)
+			f = open(sourcePath, 'rb')
+			stream = f.read()
+			f.close()
+		except:
+			print("Error occured at transfer %s"%sys.exc_info()[1])
+			if self.errorCallback:
+				self.errorCallback();
+		else:
+			return self.uploadstream(stream, uploadUrl,filename,filetype)
+
+	def upload(self, sourcePath, uploadUrl):
+		return self.uploadfile(sourcePath, uploadUrl)
