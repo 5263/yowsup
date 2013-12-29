@@ -29,7 +29,10 @@ class MediaUploader(WARequest):
 
 		self.sock = socket.socket();
 
-	def upload(self, sourcePath, uploadUrl):
+	def _d(self,*args):
+		print args
+		#import logging
+		#Logger.debug(*args)
 
 		_host = uploadUrl.replace("https://","")
 
